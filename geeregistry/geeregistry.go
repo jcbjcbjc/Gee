@@ -42,7 +42,6 @@ func (r *GeeRegistry) addService(service string, addr string) {
 
 	if err := r.gTree.AddProvider("/" + defaultRoot + "/" + service + "/" + Providers + "/" + addr); err != nil {
 		log.Println(err)
-
 	}
 }
 func (r *GeeRegistry) aliveServers(service string) []string {

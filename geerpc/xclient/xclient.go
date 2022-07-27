@@ -21,7 +21,6 @@ var _ io.Closer = (*XClient)(nil)
 
 func NewXClient(d Discovery, mode SelectMode, opt *Option) *XClient {
 	return &XClient{d: d, mode: mode, opt: opt, clients: make(map[string]*Client)}
-
 }
 
 func (xc *XClient) Close() error {
@@ -74,7 +73,7 @@ func (xc *XClient) Call(ctx context.Context, service string, serviceMethod strin
 	return xc.call(rpcAddr, ctx, serviceMethod, args, reply)
 }
 
-// Broadcast invokes the named function for every server registered in clientdiscovery
+// Broadcast invokes the named function for every server registered in clientDiscovery
 func (xc *XClient) Broadcast(ctx context.Context, service string, serviceMethod string, args, reply interface{}) error {
 	servers, err := xc.d.GetAll(service)
 	if err != nil {
