@@ -101,7 +101,7 @@ func main() {
 	wg.Wait()*/
 
 	time.Sleep(time.Second)
-	//wg.Add(2)
+	wg.Add(1)
 	//go startServer(registryAddr, &wg)
 	go startServer(registryAddr, &wg)
 	//wg.Wait()

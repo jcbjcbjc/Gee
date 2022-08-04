@@ -15,8 +15,7 @@ const (
 
 type GeeRegister struct {
 	mu              sync.Mutex
-	registerService []string
-	serviceNum      uint32
+	registerService string
 	registry        string
 	addr            string
 	duration        time.Duration
@@ -24,12 +23,10 @@ type GeeRegister struct {
 
 func NewGeeRegister(registry, addr string, duration time.Duration) *GeeRegister {
 	return &GeeRegister{
-		//TODO  20
-		registerService: make([]string, 20),
-		serviceNum:      0,
-		registry:        registry,
-		addr:            addr,
-		duration:        duration,
+
+		registry: registry,
+		addr:     addr,
+		duration: duration,
 	}
 }
 func (g *GeeRegister) StartGeeRegister() error {
@@ -39,7 +36,7 @@ func (g *GeeRegister) Register(service string) error {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 
-	g.registerService[g.serviceNum] = service
+	g.registerService = service
 	return nil
 }
 
@@ -71,8 +68,8 @@ func (g *GeeRegister) sendHeartbeat() error {
 	log.Println(g.addr, "send heart beat to registry", g.registry)
 	httpClient := &http.Client{}
 	req, _ := http.NewRequest("POST", g.registry, nil)
-	// TODO
-	req.Header.Set("Service", g.registerService[0])
+	// TODO  //////
+	req.Header.Set("Service", g.registerService)
 	req.Header.Set("X-Geerpc-serverapi", g.addr)
 	if _, err := httpClient.Do(req); err != nil {
 		log.Println("rpc server: heart beat err:", err)

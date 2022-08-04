@@ -1,4 +1,4 @@
-package Timer
+package timer
 
 import (
 	"testing"
@@ -33,7 +33,7 @@ func TestTimingWheel_AfterFunc(t *testing.T) {
 
 			err := 5 * time.Millisecond
 			if got.Before(min) || got.After(min.Add(err)) {
-				t.Errorf("Timer(%s) expiration: want [%s, %s], got %s", d, min, min.Add(err), got)
+				t.Errorf("timer(%s) expiration: want [%s, %s], got %s", d, min, min.Add(err), got)
 			}
 		})
 	}
@@ -83,7 +83,7 @@ func TestTimingWheel_ScheduleFunc(t *testing.T) {
 
 		err := 5 * time.Millisecond
 		if got.Before(min) || got.After(min.Add(err)) {
-			t.Errorf("Timer(%s) expiration: want [%s, %s], got %s", accum, min, min.Add(err), got)
+			t.Errorf("timer(%s) expiration: want [%s, %s], got %s", accum, min, min.Add(err), got)
 		}
 	}
 }

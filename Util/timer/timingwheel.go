@@ -1,4 +1,4 @@
-package Timer
+package timer
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"time"
 	"unsafe"
 
-	"Gee/Util/Timer/delayqueue"
+	"Gee/Util/timer/delayqueue"
 )
 
 // TimingWheel is an implementation of Hierarchical Timing Wheels.
@@ -247,4 +247,18 @@ func (tw *TimingWheel) ScheduleFunc(s Scheduler, f func()) (t *Timer) {
 	tw.addOrRun(t)
 
 	return
+}
+
+type DefaultScheduler struct {
+	interval time.Duration
+}
+
+var _ Scheduler = (*DefaultScheduler)(nil)
+
+func (s *DefaultScheduler) Next(prev time.Time) time.Time {
+	next := prev.Add(s.interval)
+	return next
+}
+func NewDefaultScheduler(interval time.Duration) *DefaultScheduler {
+	return &DefaultScheduler{interval: interval}
 }

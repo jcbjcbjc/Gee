@@ -1,7 +1,7 @@
-package registry
+package geeregistry
 
 import (
-	. "geeregistry/gtree"
+	. "Gee/geeregistry/gtree"
 	"log"
 	"net"
 	"net/http"
@@ -68,7 +68,10 @@ func (r *GeeRegistry) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		r.addService(service, addr)
+		log.Println("GeeRegistry Post:addService" + service + addr)
+
+		//TODO
+		//r.addService(service, addr)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
