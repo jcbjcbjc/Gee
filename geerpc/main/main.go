@@ -1,11 +1,11 @@
 package main
 
 import (
+	"Gee/geerpc"
+	"Gee/geerpc/discovery"
+	"Gee/geerpc/registry"
+	"Gee/geerpc/xclient"
 	"context"
-	"geerpc"
-	"geerpc/discovery"
-	"geerpc/registry"
-	"geerpc/xclient"
 	"log"
 	"net"
 	"sync"

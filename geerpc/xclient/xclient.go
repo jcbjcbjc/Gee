@@ -1,9 +1,9 @@
 package xclient
 
 import (
+	. "Gee/geerpc"
+	. "Gee/geerpc/discovery"
 	"context"
-	. "geerpc"
-	. "geerpc/discovery"
 	"io"
 	"reflect"
 	"sync"

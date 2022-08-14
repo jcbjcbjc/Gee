@@ -1,12 +1,12 @@
 package geerpc
 
 import (
+	"Gee/geerpc/codec"
 	"bufio"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"geerpc/codec"
 	"io"
 	"log"
 	"net"
@@ -21,9 +21,11 @@ type Call struct {
 	ServiceMethod string
 	Args          interface{}
 	Reply         interface{}
+	Async         bool
 	Error         error
 	Done          chan *Call
 }
+type OnHandler func(*Call)
 
 func (call *Call) done() {
 	call.Done <- call
@@ -39,6 +41,8 @@ type Client struct {
 	pending  map[uint64]*Call
 	closing  bool
 	shutdown bool
+	//TODO mod
+	onHandler map[string]OnHandler //no mutex
 }
 
 type clientResult struct {
@@ -85,6 +89,18 @@ func (client *Client) removeCall(seq uint64) *Call {
 	return call
 }
 
+//TODO mod
+func (client *Client) registerOnHandler(serviceMethod string, f OnHandler) error {
+
+	var err error
+	_, ok := client.onHandler[serviceMethod]
+	if ok {
+		err = errors.New("client:registerOnHandler OnHandler for the serviceMethod has existed")
+	}
+	client.onHandler[serviceMethod] = f
+	return err
+}
+
 func (client *Client) terminateCalls(err error) {
 	client.sending.Lock()
 	defer client.sending.Unlock()
@@ -129,27 +145,52 @@ func (client *Client) receive() {
 			break
 		}
 		call := client.removeCall(h.Seq)
-		switch {
-		case call == nil:
-			// it usually means that Write partially failed
-			// and call was already removed.
-			err = client.cc.ReadBody(nil)
-		case h.Error != "":
-			call.Error = fmt.Errorf(h.Error)
-			err = client.cc.ReadBody(nil)
-			call.done()
-		default:
-			err = client.cc.ReadBody(call.Reply)
-			if err != nil {
-				call.Error = errors.New("reading body " + err.Error())
+		if call.Async {
+			switch {
+			case call == nil:
+				// it usually means that Write partially failed
+				// and call was already removed.
+				err = client.cc.ReadBody(nil)
+			case h.Error != "":
+				call.Error = fmt.Errorf(h.Error)
+				err = client.cc.ReadBody(nil)
+				//TODO  report err
+			default:
+				err = client.cc.ReadBody(call.Reply)
+				if err != nil {
+					call.Error = errors.New("reading body " + err.Error())
+				}
+				//TODO mod
+				handler := client.onHandler[call.ServiceMethod]
+				if handler == nil {
+					//TODO report err
+				}
+				//TODO mod
+				go handler(call)
 			}
-			call.done()
+		} else {
+			switch {
+			case call == nil:
+				// it usually means that Write partially failed
+				// and call was already removed.
+				err = client.cc.ReadBody(nil)
+			case h.Error != "":
+				call.Error = fmt.Errorf(h.Error)
+				err = client.cc.ReadBody(nil)
+				call.done()
+			default:
+				err = client.cc.ReadBody(call.Reply)
+				if err != nil {
+					call.Error = errors.New("reading body " + err.Error())
+				}
+				call.done()
+			}
 		}
 	}
 	client.terminateCalls(err)
 }
 
-func (client *Client) Go(serviceMethod string, args, reply interface{}, done chan *Call) *Call {
+func (client *Client) Go(serviceMethod string, args, reply interface{}, done chan *Call, Async bool) *Call {
 	if done == nil {
 		done = make(chan *Call, 10)
 	} else if cap(done) == 0 {
@@ -159,6 +200,7 @@ func (client *Client) Go(serviceMethod string, args, reply interface{}, done cha
 		ServiceMethod: serviceMethod,
 		Args:          args,
 		Reply:         reply,
+		Async:         Async,
 		Done:          done,
 	}
 	client.send(call)
@@ -168,7 +210,7 @@ func (client *Client) Go(serviceMethod string, args, reply interface{}, done cha
 // Call invokes the named function, waits for it to complete,
 // and returns its error status.
 func (client *Client) Call(ctx context.Context, serviceMethod string, args, reply interface{}) error {
-	call := client.Go(serviceMethod, args, reply, make(chan *Call, 1))
+	call := client.Go(serviceMethod, args, reply, make(chan *Call, 1), false)
 	select {
 	case <-ctx.Done():
 		client.removeCall(call.Seq)

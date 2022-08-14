@@ -1,21 +1,13 @@
 package main
 
 import (
-	. "Gee/geeregistry"
-	"net"
-	"net/http"
+	"Gee/geeregistry"
 	"sync"
 )
 
-func startRegistry(wg *sync.WaitGroup) {
-	l, _ := net.Listen("tcp", ":9999")
-	HandleHTTP()
-
-	_ = http.Serve(l, nil)
-}
 func main() {
 	wg := sync.WaitGroup{}
 	wg.Add(1)
-	go startRegistry(&wg)
+	go geeregistry.StartRegistry("9999", &wg)
 	wg.Wait()
 }

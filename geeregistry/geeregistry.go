@@ -2,8 +2,8 @@ package geeregistry
 
 import (
 	. "Gee/geeregistry/gtree"
+	"Gee/geeweb"
 	"log"
-	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -54,7 +54,7 @@ func (r *GeeRegistry) aliveServers(service string) []string {
 	return providers
 }
 
-func (r *GeeRegistry) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+/*func (r *GeeRegistry) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
 		service := req.Header.Get("Service")
@@ -71,23 +71,32 @@ func (r *GeeRegistry) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		log.Println("GeeRegistry Post:addService" + service + addr)
 
 		//TODO
-		//r.addService(service, addr)
+		r.addService(service, addr)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
-}
+}*/
 
-func (r *GeeRegistry) HandleHTTP(registryPath string) {
-	http.Handle(defaultPath, r)
-	log.Println("rpc registry path:", registryPath)
-}
-func HandleHTTP() {
-	DefaultGeeRegister.HandleHTTP(defaultPath)
-}
+func StartRegistry(addr string, wg *sync.WaitGroup) {
+	r := geeweb.Default()
+	r.GET(defaultPath, func(c *geeweb.Context) {
+		service := c.Req.Header.Get("Service")
+		// keep it simple, server is in req.Header
+		c.Writer.Header().Set("X-Geerpc-Servers", strings.Join(DefaultGeeRegister.aliveServers(service), ","))
+	})
+	// index out of range for testing Recovery()
+	r.POST(defaultPath, func(c *geeweb.Context) {
+		service := c.Req.Header.Get("Service")
+		addr := c.Req.Header.Get("X-Geerpc-serverapi")
+		if addr == "" {
+			c.Writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		log.Println("GeeRegistry Post:addService" + service + addr)
 
-func startRegistry(wg *sync.WaitGroup) {
-	l, _ := net.Listen("tcp", ":8848")
-	HandleHTTP()
-	wg.Done()
-	_ = http.Serve(l, nil)
+		//TODO
+		DefaultGeeRegister.addService(service, addr)
+	})
+
+	r.Run(addr)
 }

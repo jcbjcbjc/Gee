@@ -2,6 +2,7 @@ package geerpc
 
 import (
 	"context"
+	"log"
 	"net"
 	"os"
 	"runtime"
@@ -14,6 +15,10 @@ type Bar int
 
 func (b Bar) Timeout(argv int, reply *int) error {
 	time.Sleep(time.Second * 2)
+	return nil
+}
+func (b Bar) Async(argv int, reply *int) error {
+	*reply = argv
 	return nil
 }
 
@@ -65,6 +70,25 @@ func TestClient_Call(t *testing.T) {
 		var reply int
 		err := client.Call(context.Background(), "Bar.Timeout", 1, &reply)
 		_assert(err != nil && strings.Contains(err.Error(), "handle timeout"), "expect a timeout error")
+	})
+}
+
+func TestClient_AsyncCall(t *testing.T) {
+	t.Parallel()
+	addrCh := make(chan string)
+	go startServer(addrCh)
+	addr := <-addrCh
+	time.Sleep(time.Second)
+	t.Run("AsyncCall", func(t *testing.T) {
+		client, _ := Dial("tcp", addr)
+		//ctx, _ := context.WithTimeout(context.Background(), time.Second)
+		client.registerOnHandler("Bar.Async", func(call *Call) {
+			log.Println(call.Reply)
+		})
+		var reply int
+		_ = client.Go("Bar.Async", 1, &reply, make(chan *Call, 1), true)
+
+		//_assert(err != nil && strings.Contains(err.Error(), ctx.Err().Error()), "expect a timeout error")
 	})
 }
 

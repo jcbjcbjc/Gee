@@ -23,7 +23,6 @@ type GeeRegister struct {
 
 func NewGeeRegister(registry, addr string, duration time.Duration) *GeeRegister {
 	return &GeeRegister{
-
 		registry: registry,
 		addr:     addr,
 		duration: duration,
@@ -33,9 +32,8 @@ func (g *GeeRegister) StartGeeRegister() error {
 	return g.heartbeat()
 }
 func (g *GeeRegister) Register(service string) error {
-	g.mu.Lock()
-	defer g.mu.Unlock()
-
+	/*g.mu.Lock()
+	defer g.mu.Unlock()*/
 	g.registerService = service
 	return nil
 }
