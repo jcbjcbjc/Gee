@@ -54,7 +54,6 @@ func (xc *XClient) dial(rpcaddr string) (*Client, error) {
 	return client, nil
 }
 func (xc *XClient) call(rpcAddr string, ctx context.Context, serviceMethod string, args, reply interface{}) error {
-
 	client, err := xc.dial(rpcAddr)
 	if err != nil {
 		return err

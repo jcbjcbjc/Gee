@@ -36,18 +36,18 @@ func New(timeout time.Duration) *GeeRegistry {
 
 var DefaultGeeRegister = New(DefaultTimeout)
 
-func (r *GeeRegistry) addService(service string, addr string) {
+func (r *GeeRegistry) addServiceProvider(groupPath, service string, addr string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if err := r.gTree.AddProvider("/" + defaultRoot + "/" + service + "/" + Providers + "/" + addr); err != nil {
+	if err := r.gTree.AddProvider(groupPath, service, addr); err != nil {
 		log.Println(err)
 	}
 }
-func (r *GeeRegistry) aliveServers(service string) []string {
+func (r *GeeRegistry) aliveServers(groupPath, service string) []string {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	providers, err := r.gTree.GetProviders("/" + defaultRoot + "/" + service + "/" + Providers)
+	providers, err := r.gTree.GetProviders(groupPath, service)
 	if err != nil {
 		log.Println(err)
 	}
@@ -82,7 +82,7 @@ func StartRegistry(addr string, wg *sync.WaitGroup) {
 	r.GET(defaultPath, func(c *geeweb.Context) {
 		service := c.Req.Header.Get("Service")
 		// keep it simple, server is in req.Header
-		c.Writer.Header().Set("X-Geerpc-Servers", strings.Join(DefaultGeeRegister.aliveServers(service), ","))
+		c.Writer.Header().Set("X-Geerpc-Servers", strings.Join(DefaultGeeRegister.aliveServers("", service), ","))
 	})
 	// index out of range for testing Recovery()
 	r.POST(defaultPath, func(c *geeweb.Context) {
@@ -95,7 +95,7 @@ func StartRegistry(addr string, wg *sync.WaitGroup) {
 		log.Println("GeeRegistry Post:addService" + service + addr)
 
 		//TODO
-		DefaultGeeRegister.addService(service, addr)
+		DefaultGeeRegister.addServiceProvider("", service, addr)
 	})
 
 	r.Run(addr)

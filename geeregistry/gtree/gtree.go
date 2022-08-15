@@ -1,40 +1,37 @@
 package gtree
 
+import "time"
+
 type GTree struct {
-	root *GNode
+	root *Ggroup
 	//mu   sync.Mutex
 }
 
-func (g *GTree) createRoot(name string) error {
-	return nil
-}
-
-func (g *GTree) createService(root string, name string) error {
-	return nil
-}
-func (g *GTree) removeService(root string, name string) error {
-	return nil
-}
-func (g *GTree) AddProvider(path string) error {
-	return nil
-}
-func (g *GTree) RemoveProvider(path string) error {
-	return nil
-}
-func (g *GTree) GetProviders(path string) ([]string, error) {
+func (g *GTree) findGroup(groupPath string) (*Ggroup, error) {
 	return nil, nil
-
+}
+func (g *GTree) AddProvider(groupPath, service string, addr string) error {
+	group, err := g.findGroup(groupPath)
+	if err != nil {
+		return err
+	}
+	serviceNode := group.findOrAddService(service)
+	for _, child := range serviceNode.Providers {
+		if child.addr == addr {
+			child.start = time.Now()
+			return nil
+		}
+	}
+	serviceNode.Providers = append(serviceNode.Providers, &providerItem{addr: addr, start: time.Now()})
+	return nil
+}
+func (g *GTree) RemoveProvider(groupPath, service string, provider *providerItem) error {
+	return nil
+}
+func (g *GTree) GetProviders(groupPath, service string) ([]string, error) {
+	return nil, nil
 }
 
 func NewGTree() *GTree {
-	root := &GNode{
-		data:  "/",
-		child: make(map[string]*GNode),
-		path:  "/",
-	}
-	return &GTree{root: root}
-}
-
-func (g *GTree) find(path string) (*GNode, error) {
-	return nil, nil
+	return &GTree{root: newGroup()}
 }
