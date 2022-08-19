@@ -1,11 +1,11 @@
 package xclient
 
 import (
-	"Gee/Util/cache/singleflight"
-	. "Gee/geerpc"
-	. "Gee/geerpc/discovery"
 	"context"
 	"errors"
+	"github.com/jcbjcbjc/Gee/Util/cache/singleflight"
+	. "github.com/jcbjcbjc/Gee/geerpc"
+	. "github.com/jcbjcbjc/Gee/geerpc/discovery"
 	"io"
 	"reflect"
 	"sync"

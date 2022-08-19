@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Gee/geeregistry"
+	"github.com/jcbjcbjc/Gee/geeregistry"
 	"sync"
 )
 

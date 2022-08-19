@@ -1,13 +1,14 @@
 package geerpc
 
 import (
-	"Gee/geerpc/codec"
-	"Gee/geerpc/xclient"
 	"bufio"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/jcbjcbjc/Gee/geerpc/codec"
+
+	"github.com/jcbjcbjc/Gee/geerpc/xclient"
 	"io"
 	"log"
 	"net"

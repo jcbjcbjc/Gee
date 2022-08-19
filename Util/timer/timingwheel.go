@@ -6,7 +6,7 @@ import (
 	"time"
 	"unsafe"
 
-	"Gee/Util/timer/delayqueue"
+	"github.com/jcbjcbjc/Gee/Util/timer/delayqueue"
 )
 
 // TimingWheel is an implementation of Hierarchical Timing Wheels.

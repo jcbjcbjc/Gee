@@ -1,8 +1,8 @@
 package geeregistry
 
 import (
-	. "Gee/geeregistry/gtree"
-	"Gee/geeweb"
+	. "github.com/jcbjcbjc/Gee/geeregistry/gtree"
+	"github.com/jcbjcbjc/Gee/geeweb"
 	"log"
 	"net/http"
 	"strings"
@@ -79,13 +79,13 @@ func (r *GeeRegistry) aliveServers(groupPath, service string) []string {
 
 func StartRegistry(addr string, wg *sync.WaitGroup) {
 	r := geeweb.Default()
-	r.GET(defaultPath, func(c *geeweb.Context) {
+	r.GET(defaultPath, geeweb.HandlerFunc(func(c *geeweb.Context) {
 		service := c.Req.Header.Get("Service")
 		// keep it simple, server is in req.Header
 		c.Writer.Header().Set("X-Geerpc-Servers", strings.Join(DefaultGeeRegister.aliveServers("", service), ","))
-	})
+	}))
 	// index out of range for testing Recovery()
-	r.POST(defaultPath, func(c *geeweb.Context) {
+	r.POST(defaultPath, geeweb.HandlerFunc(func(c *geeweb.Context) {
 		service := c.Req.Header.Get("Service")
 		addr := c.Req.Header.Get("X-Geerpc-serverapi")
 		if addr == "" {
@@ -96,7 +96,7 @@ func StartRegistry(addr string, wg *sync.WaitGroup) {
 
 		//TODO
 		DefaultGeeRegister.addServiceProvider("", service, addr)
-	})
+	}))
 
 	r.Run(addr)
 }
