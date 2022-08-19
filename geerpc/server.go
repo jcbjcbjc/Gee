@@ -225,8 +225,8 @@ func (server *Server) findService(serviceMethod string) (svc *Service, mtype *me
 }
 
 const (
-	connected        = "200 Connected to Gee RPC"
-	defaultRPCPath   = "/_geeprc_"
+	Connected        = "200 Connected to Gee RPC"
+	DefaultRPCPath   = "/_geeprc_"
 	defaultDebugPath = "/debug/geerpc"
 )
 
@@ -243,14 +243,14 @@ func (server *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		log.Print("rpc hijacking ", req.RemoteAddr, ": ", err.Error())
 		return
 	}
-	_, _ = io.WriteString(conn, "HTTP/1.0 "+connected+"\n\n")
+	_, _ = io.WriteString(conn, "HTTP/1.0 "+Connected+"\n\n")
 	server.ServeConn(conn)
 }
 
 // HandleHTTP registers an HTTP handler for RPC messages on rpcPath.
 // It is still necessary to invoke http.Serve(), typically in a go statement.
 func (server *Server) HandleHTTP() {
-	http.Handle(defaultRPCPath, server)
+	http.Handle(DefaultRPCPath, server)
 	http.Handle(defaultDebugPath, debugHTTP{server})
 	log.Println("rpc server debug path:", defaultDebugPath)
 }

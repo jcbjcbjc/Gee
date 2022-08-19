@@ -5,8 +5,6 @@ import (
 	"github.com/jcbjcbjc/Gee/geerpc"
 	"github.com/jcbjcbjc/Gee/geerpc/discovery"
 	"github.com/jcbjcbjc/Gee/geerpc/registry"
-	"github.com/jcbjcbjc/Gee/geerpc/xclient"
-
 	"log"
 	"net"
 	"sync"
@@ -44,7 +42,7 @@ func startServer(registryAddr string, wg *sync.WaitGroup) {
 	server.Accept(l)
 }
 
-func foo(xc *xclient.XClient, ctx context.Context, typ, service, serviceMethod string, args *Args) {
+func foo(xc *geerpc.XClient, ctx context.Context, typ, service, serviceMethod string, args *Args) {
 	var reply int
 	var err error
 	switch typ {
@@ -62,7 +60,7 @@ func foo(xc *xclient.XClient, ctx context.Context, typ, service, serviceMethod s
 
 func call(registry string) {
 	d := discovery.NewGeeRegistryDiscovery(registry, 0)
-	xc := xclient.NewXClient(d, discovery.RandomSelect, nil)
+	xc := geerpc.NewXClient(d, discovery.RandomSelect, nil)
 	defer func() { _ = xc.Close() }()
 	// send request & receive response
 	var wg sync.WaitGroup
@@ -78,7 +76,7 @@ func call(registry string) {
 
 func broadcast(registry string) {
 	d := discovery.NewGeeRegistryDiscovery(registry, 0)
-	xc := xclient.NewXClient(d, discovery.RandomSelect, nil)
+	xc := geerpc.NewXClient(d, discovery.RandomSelect, nil)
 	defer func() { _ = xc.Close() }()
 	var wg sync.WaitGroup
 	for i := 0; i < 5; i++ {

@@ -2,7 +2,6 @@ package geerpc
 
 import (
 	"context"
-	"github.com/jcbjcbjc/Gee/geerpc/xclient"
 	"log"
 	"net"
 	"os"
@@ -83,7 +82,7 @@ func TestClient_AsyncCall(t *testing.T) {
 	t.Run("AsyncCall", func(t *testing.T) {
 		client, _ := Dial("tcp", addr)
 		//ctx, _ := context.WithTimeout(context.Background(), time.Second)
-		xclient.RegisterOnHandler("Bar.Async", func(call *Call) {
+		RegisterOnHandler("Bar.Async", func(call *Call) {
 			log.Println(call.Reply)
 		})
 		var reply int

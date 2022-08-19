@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"github.com/jcbjcbjc/Gee/geerpc/codec"
 
-	"github.com/jcbjcbjc/Gee/geerpc/xclient"
 	"io"
 	"log"
 	"net"
@@ -151,7 +150,7 @@ func (client *Client) receive() {
 					call.Error = errors.New("reading body " + err.Error())
 				}
 				//TODO mod
-				handler, err := xclient.GetOnHandler(call.ServiceMethod)
+				handler, err := GetOnHandler(call.ServiceMethod)
 				if err != nil {
 					//TODO report err
 				}
@@ -242,12 +241,12 @@ func NewClient(conn net.Conn, opt *Option) (*Client, error) {
 
 // NewHTTPClient new a Client instance via HTTP as transport protocol
 func NewHTTPClient(conn net.Conn, opt *Option) (*Client, error) {
-	_, _ = io.WriteString(conn, fmt.Sprintf("CONNECT %s HTTP/1.0\n\n", defaultRPCPath))
+	_, _ = io.WriteString(conn, fmt.Sprintf("CONNECT %s HTTP/1.0\n\n", DefaultRPCPath))
 
 	// Require successful HTTP response
 	// before switching to RPC protocol.
 	resp, err := http.ReadResponse(bufio.NewReader(conn), &http.Request{Method: "CONNECT"})
-	if err == nil && resp.Status == connected {
+	if err == nil && resp.Status == Connected {
 		return NewClient(conn, opt)
 	}
 	if err == nil {

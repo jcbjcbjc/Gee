@@ -1,12 +1,9 @@
-package xclient
+package geerpc
 
 import (
 	"context"
 	"errors"
-	"github.com/jcbjcbjc/Gee/Util/cache/singleflight"
-	. "github.com/jcbjcbjc/Gee/geerpc"
 	"github.com/jcbjcbjc/Gee/geerpc/discovery"
-
 	"io"
 	"reflect"
 	"sync"
@@ -29,14 +26,12 @@ type XClient struct {
 	opt     *Option
 	mu      sync.Mutex
 	clients map[string]*Client
-
-	loader *singleflight.Group
 }
 
 var _ io.Closer = (*XClient)(nil)
 
 func NewXClient(d discovery.Discovery, mode discovery.SelectMode, opt *Option) *XClient {
-	return &XClient{d: d, mode: mode, opt: opt, clients: make(map[string]*Client), loader: &singleflight.Group{}}
+	return &XClient{d: d, mode: mode, opt: opt, clients: make(map[string]*Client)}
 }
 
 func (xc *XClient) Close() error {
