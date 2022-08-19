@@ -84,7 +84,7 @@ func StartRegistry(addr string, wg *sync.WaitGroup) {
 		// keep it simple, server is in req.Header
 		c.Writer.Header().Set("X-Geerpc-Servers", strings.Join(DefaultGeeRegister.aliveServers("", service), ","))
 	}))
-	// index out of range for testing Recovery()
+
 	r.POST(defaultPath, geeweb.HandlerFunc(func(c *geeweb.Context) {
 		service := c.Req.Header.Get("Service")
 		addr := c.Req.Header.Get("X-Geerpc-serverapi")
@@ -99,4 +99,5 @@ func StartRegistry(addr string, wg *sync.WaitGroup) {
 	}))
 
 	r.Run(addr)
+	wg.Done()
 }

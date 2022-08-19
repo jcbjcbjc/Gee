@@ -5,7 +5,8 @@ import (
 	"errors"
 	"github.com/jcbjcbjc/Gee/Util/cache/singleflight"
 	. "github.com/jcbjcbjc/Gee/geerpc"
-	. "github.com/jcbjcbjc/Gee/geerpc/discovery"
+	"github.com/jcbjcbjc/Gee/geerpc/discovery"
+
 	"io"
 	"reflect"
 	"sync"
@@ -23,8 +24,8 @@ func GetOnHandler(serviceMethod string) (OnHandler, error) {
 }
 
 type XClient struct {
-	d       Discovery
-	mode    SelectMode
+	d       discovery.Discovery
+	mode    discovery.SelectMode
 	opt     *Option
 	mu      sync.Mutex
 	clients map[string]*Client
@@ -34,7 +35,7 @@ type XClient struct {
 
 var _ io.Closer = (*XClient)(nil)
 
-func NewXClient(d Discovery, mode SelectMode, opt *Option) *XClient {
+func NewXClient(d discovery.Discovery, mode discovery.SelectMode, opt *Option) *XClient {
 	return &XClient{d: d, mode: mode, opt: opt, clients: make(map[string]*Client), loader: &singleflight.Group{}}
 }
 
