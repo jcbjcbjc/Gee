@@ -8,16 +8,24 @@ import (
 	"strings"
 )
 
+type Handler interface {
+	Handle(c *Context)
+}
+
 // HandlerFunc defines the request handler used by gee
-type HandlerFunc func(*Context)
+type HandlerFunc func(c *Context)
+
+func (f HandlerFunc) Handle(c *Context) {
+	f(c)
+}
 
 // Engine implement the interface of ServeHTTP
 type (
 	RouterGroup struct {
 		prefix      string
-		middlewares []HandlerFunc // support middleware
-		parent      *RouterGroup  // support nesting
-		engine      *Engine       // all groups share a Engine instance
+		middlewares []Handler    // support middleware
+		parent      *RouterGroup // support nesting
+		engine      *Engine      // all groups share a Engine instance
 	}
 
 	Engine struct {
@@ -59,23 +67,23 @@ func (group *RouterGroup) Group(prefix string) *RouterGroup {
 }
 
 // Use is defined to add middleware to the group
-func (group *RouterGroup) Use(middlewares ...HandlerFunc) {
+func (group *RouterGroup) Use(middlewares ...Handler) {
 	group.middlewares = append(group.middlewares, middlewares...)
 }
 
-func (group *RouterGroup) addRoute(method string, comp string, handler HandlerFunc) {
+func (group *RouterGroup) addRoute(method string, comp string, handler Handler) {
 	pattern := group.prefix + comp
 	log.Printf("Route %4s - %s", method, pattern)
 	group.engine.router.addRoute(method, pattern, handler)
 }
 
 // GET defines the method to add GET request
-func (group *RouterGroup) GET(pattern string, handler HandlerFunc) {
+func (group *RouterGroup) GET(pattern string, handler Handler) {
 	group.addRoute("GET", pattern, handler)
 }
 
 // POST defines the method to add POST request
-func (group *RouterGroup) POST(pattern string, handler HandlerFunc) {
+func (group *RouterGroup) POST(pattern string, handler Handler) {
 	group.addRoute("POST", pattern, handler)
 }
 
@@ -118,7 +126,7 @@ func (engine *Engine) Run(addr string) (err error) {
 }
 
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	var middlewares []HandlerFunc
+	var middlewares []Handler
 	for _, group := range engine.groups {
 		if strings.HasPrefix(req.URL.Path, group.prefix) {
 			middlewares = append(middlewares, group.middlewares...)

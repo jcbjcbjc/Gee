@@ -2,6 +2,7 @@ package geerpc
 
 import (
 	"Gee/geerpc/codec"
+	"Gee/geerpc/xclient"
 	"bufio"
 	"context"
 	"encoding/json"
@@ -42,7 +43,7 @@ type Client struct {
 	closing  bool
 	shutdown bool
 	//TODO mod
-	onHandler map[string]OnHandler //no mutex
+	OnHandler map[string]OnHandler //no mutex
 }
 
 type clientResult struct {
@@ -87,18 +88,6 @@ func (client *Client) removeCall(seq uint64) *Call {
 	call := client.pending[seq]
 	delete(client.pending, seq)
 	return call
-}
-
-//TODO mod
-func (client *Client) registerOnHandler(serviceMethod string, f OnHandler) error {
-
-	var err error
-	_, ok := client.onHandler[serviceMethod]
-	if ok {
-		err = errors.New("client:registerOnHandler OnHandler for the serviceMethod has existed")
-	}
-	client.onHandler[serviceMethod] = f
-	return err
 }
 
 func (client *Client) terminateCalls(err error) {
@@ -161,8 +150,8 @@ func (client *Client) receive() {
 					call.Error = errors.New("reading body " + err.Error())
 				}
 				//TODO mod
-				handler := client.onHandler[call.ServiceMethod]
-				if handler == nil {
+				handler, err := xclient.GetOnHandler(call.ServiceMethod)
+				if err != nil {
 					//TODO report err
 				}
 				//TODO mod
@@ -209,8 +198,8 @@ func (client *Client) Go(serviceMethod string, args, reply interface{}, done cha
 
 // Call invokes the named function, waits for it to complete,
 // and returns its error status.
-func (client *Client) Call(ctx context.Context, serviceMethod string, args, reply interface{}) error {
-	call := client.Go(serviceMethod, args, reply, make(chan *Call, 1), false)
+func (client *Client) Call(ctx context.Context, serviceMethod string, args, reply interface{}, Async bool) error {
+	call := client.Go(serviceMethod, args, reply, make(chan *Call, 1), Async)
 	select {
 	case <-ctx.Done():
 		client.removeCall(call.Seq)

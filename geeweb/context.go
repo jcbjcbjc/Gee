@@ -19,7 +19,7 @@ type Context struct {
 	// response info
 	StatusCode int
 	// middleware
-	handlers []HandlerFunc
+	handlers []Handler
 	index    int
 	// engine pointer
 	engine *Engine
@@ -39,7 +39,7 @@ func (c *Context) Next() {
 	c.index++
 	s := len(c.handlers)
 	for ; c.index < s; c.index++ {
-		c.handlers[c.index](c)
+		c.handlers[c.index].Handle(c)
 	}
 }
 

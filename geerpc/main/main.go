@@ -36,7 +36,7 @@ func startServer(registryAddr string, wg *sync.WaitGroup) {
 	if err := register.Register("Foo"); err != nil {
 		log.Println(err)
 	}
-	if err := register.StartGeeRegister(); err != nil {
+	if err := register.StartRegister(); err != nil {
 		log.Println(err)
 	}
 	wg.Done()
@@ -48,7 +48,7 @@ func foo(xc *xclient.XClient, ctx context.Context, typ, service, serviceMethod s
 	var err error
 	switch typ {
 	case "call":
-		err = xc.Call(ctx, service, serviceMethod, args, &reply)
+		err = xc.Call(ctx, service, serviceMethod, args, &reply, false)
 	case "broadcast":
 		err = xc.Broadcast(ctx, service, serviceMethod, args, &reply)
 	}

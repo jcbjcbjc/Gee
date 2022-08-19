@@ -28,7 +28,10 @@ func NewGeeRegister(registry, addr string, duration time.Duration) *GeeRegister 
 		duration: duration,
 	}
 }
-func (g *GeeRegister) StartGeeRegister() error {
+
+var _ Register = (*GeeRegister)(nil)
+
+func (g *GeeRegister) StartRegister() error {
 	return g.heartbeat()
 }
 func (g *GeeRegister) Register(service string) error {
